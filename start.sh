@@ -40,4 +40,4 @@ python --version
 python -c "import yaml; print('PyYAML version:', yaml.__version__)"
 
 # Run ComfyUI
-exec python main.py
+exec python main.py --port 3000 --listen
