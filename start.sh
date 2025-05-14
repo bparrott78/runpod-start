@@ -3,25 +3,22 @@ set -e
 
 cd /workspace
 
-# Check for venv
-if [ -d ".venv" ]; then
-  echo "Activating existing venv"
-  source .venv/bin/activate
+if [ -d "ComfyUI" ]; then
+    cd ComfyUI
+    if [ ! -d "venv" ]; then
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+    else
+        source venv/bin/activate
+    fi
 else
-  # Check for ComfyUI
-  if [ ! -d "ComfyUI" ]; then
-    echo "Cloning ComfyUI"
     git clone https://github.com/comfyanonymous/ComfyUI.git
-  fi
-  cd ComfyUI
-  python3 -m venv ../.venv
-  source ../.venv/bin/activate
-  pip install -r requirements.txt
-  cd ..
-  echo "Setup complete."
-  source .venv/bin/activate
+    cd ComfyUI
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
 fi
 
-# Now run your main process, e.g., start ComfyUI, open shell, etc.
-# exec python ComfyUI/main.py   # example
-exec "$@"
+# Now run ComfyUI
+exec python main.py
