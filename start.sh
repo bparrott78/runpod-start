@@ -14,20 +14,21 @@ else
     python3 -m venv venv
 fi
 
-# Always activate venv and install/upgrade everything needed
+# Always activate the venv
 source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install PyYAML
 
-echo "Python being used:"
+# Fix broken/missing pip
+python -m ensurepip --upgrade
+python -m pip install --upgrade pip
+
+# Install requirements and PyYAML, just in case
+python -m pip install -r requirements.txt
+python -m pip install PyYAML
+
+# Print diagnostic info
 which python
-
-echo "Python version:"
 python --version
+python -c "import yaml; print('PyYAML version:', yaml.__version__)"
 
-echo "PyYAML version:"
-python -c "import yaml; print(yaml.__version__)"
-
-# Now run ComfyUI using *the venv Python*
+# Run ComfyUI
 exec python main.py
