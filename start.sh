@@ -8,17 +8,23 @@ if [ -d "ComfyUI" ]; then
     if [ ! -d "venv" ]; then
         python3 -m venv venv
         source venv/bin/activate
+        pip install --upgrade pip
         pip install -r requirements.txt
+        pip install PyYAML
     else
         source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install PyYAML
     fi
 else
     git clone https://github.com/comfyanonymous/ComfyUI.git
     cd ComfyUI
     python3 -m venv venv
     source venv/bin/activate
+    pip install --upgrade pip
     pip install -r requirements.txt
+    pip install PyYAML
 fi
 
-# Now run ComfyUI
 exec python main.py
