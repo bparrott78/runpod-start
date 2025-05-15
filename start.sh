@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+# Set the network volume path
+NETWORK_VOLUME="/workspace"
 
 cd /workspace
 
@@ -33,6 +35,31 @@ if ! python -c "import yaml" &> /dev/null || [ ! -f "requirements.txt" ] || ! py
 else
     echo "All dependencies are already installed!"
 fi
+# Patch ComfyUI main.py for legacy serialization
+echo "Patching ComfyUI main.py for legacy serialization"
+MAIN_PY="workspace/ComfyUI/main.py"
+if [ -f "$MAIN_PY" ]; then
+    if ! grep -q "torch.serialization._legacy_serialization" "$MAIN_PY"; then
+        echo "Patching main.py to enable legacy serialization"
+        sed -i '2a import torch' "$MAIN_PY"
+        sed -i '3a torch.serialization._legacy_serialization = True' "$MAIN_PY"
+    fi
+fi
+# Check if NETWORK_VOLUME exists; if not, use root directory instead
+if [ ! -d "$NETWORK_VOLUME" ]; then
+    echo "NETWORK_VOLUME directory '$NETWORK_VOLUME' does not exist. You are NOT using a network volume. Setting NETWORK_VOLUME to '/' (root directory)."
+    NETWORK_VOLUME="/"
+    echo "NETWORK_VOLUME directory doesn't exist. Starting JupyterLab on root directory..."
+    jupyter-lab --ip=0.0.0.0 --allow-root --no-browser --NotebookApp.token='' --NotebookApp.password='' --ServerApp.allow_origin='*' --ServerApp.allow_credentials=True --notebook-dir=/ &
+else
+    echo "NETWORK_VOLUME directory exists. Starting JupyterLab..."
+    jupyter-lab --ip=0.0.0.0 --allow-root --no-browser --NotebookApp.token='' --NotebookApp.password='' --ServerApp.allow_origin='*' --ServerApp.allow_credentials=True --notebook-dir=/workspace &
+fi
+COMFYUI_DIR="$NETWORK_VOLUME/ComfyUI"
+WORKFLOW_DIR="$NETWORK_VOLUME/ComfyUI/user/default/workflows"
+
+# Set the target directory
+CUSTOM_NODES_DIR="$NETWORK_VOLUME/ComfyUI/custom_nodes"
 
 # Print diagnostic info
 which python
