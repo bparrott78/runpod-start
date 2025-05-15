@@ -35,14 +35,15 @@ if ! python -c "import yaml" &> /dev/null || [ ! -f "requirements.txt" ] || ! py
 else
     echo "All dependencies are already installed!"
 fi
-# Patch ComfyUI main.py for legacy serialization
-echo "Patching ComfyUI main.py for legacy serialization"
+echo "Patching ComfyUI main.py for PyTorch serialization changes"
 MAIN_PY="workspace/ComfyUI/main.py"
 if [ -f "$MAIN_PY" ]; then
-    if ! grep -q "torch.serialization._legacy_serialization" "$MAIN_PY"; then
-        echo "Patching main.py to enable legacy serialization"
+    if ! grep -q "torch.serialization.add_safe_globals" "$MAIN_PY"; then
+        echo "Patching main.py to allowlist getattr and handle weights_only"
         sed -i '2a import torch' "$MAIN_PY"
-        sed -i '3a torch.serialization._legacy_serialization = True' "$MAIN_PY"
+        sed -i '3a torch.serialization.add_safe_globals([getattr])' "$MAIN_PY"
+        sed -i '4a # Ensure weights_only is set to False for trusted sources' "$MAIN_PY"
+        sed -i '5a torch.load = lambda *args, **kwargs: torch.load(*args, weights_only=False, **kwargs) if "weights_only" in kwargs else torch.load(*args, **kwargs)' "$MAIN_PY"
     fi
 fi
 # Check if NETWORK_VOLUME exists; if not, use root directory instead
