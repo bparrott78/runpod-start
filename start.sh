@@ -182,4 +182,4 @@ fi
 
 # 6. Start ComfyUI
 echo "Starting ComfyUI from $PWD..."
-python main.py --listen # Uses python from the activated venv
+python main.py --listen --port 3000# Uses python from the activated venv
